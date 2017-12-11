@@ -7,10 +7,11 @@
 \usepackage[pdftex]{graphicx}
 \usepackage[font=small,format=plain,labelfont=bf,up,textfont=it,up]{caption}
 \usepackage[final]{pdfpages}
+\usepackage{pdflscape}
 
 \usepackage[pdftex,unicode,hidelinks]{hyperref}
 
-\title{Lambert-CZ -- nové zobrazení pro Česko}
+\title{Lambert CZ -- nové zobrazení pro Česko}
 \date{\today}
 \author{Jan Šimbera}
 
@@ -25,54 +26,77 @@ V současnosti nejvíce rozšířené kartografické zobrazení pro Česko je K�
 \end{abstract}
 
 \section{Popis zobrazení}
-Zobrazení je variantou Lambertova sečného úhlojevného \emph{(konformního)} kuželového zobrazení z elipsoidu do roviny. Počítá s využitím referenčního elipsoidu WGS-84. 
+Zobrazení je variantou Lambertova sečného úhlojevného \emph{(konformního)} kuželového zobrazení z elipsoidu do roviny. Počítá s využitím evropského referenčního elipsoidu ETRS89. 
 
 \subsection{Parametry zobrazení}
 Parametry jsou následující:
 \begin{itemize}
   \item orientace os: standardní matematická
   \item základní poledník $\lambda_0 = 15\dg$
-  \item základní rovnoběžka $\varphi_0 = 50\dg$
+  \item základní rovnoběžka $\varphi_0 = 49\dg 45'$
   \item sečné rovnoběžky:
     \begin{itemize}
-      \item $\varphi_1 = 49\dg 15'$
+      \item $\varphi_1 = 49\dg$
       \item $\varphi_2 = 50\dg 30'$
     \end{itemize}
   \item posun ve směru osy x \emph{(false easting)} $\Delta x = 250\,000$ m
-  \item posun ve směru osy y \emph{(false northing)} $\Delta y = 200\,000$ m
+  \item posun ve směru osy y \emph{(false northing)} $\Delta y = 150\,000$ m
 \end{itemize}
 
-\subsection{Definiční soubor}
+\subsection{Definice ve WKT}
 Definiční WKT soubor má tvar:
 \begin{verbatim}
-PROJCS["Czechia_Simbera_Conformal_Conic",
-  GEOGCS["GCS_WGS_1984",
-    DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],
+PROJCS["Lambert_CZ",
+  GEOGCS["GCS_ETRS_1989",
+    DATUM["D_ETRS_1989",SPHEROID["GRS_1980",6378137.0,298.257222101]],
     PRIMEM["Greenwich",0.0],
-    UNIT["Degree",0.0174532925199433]],
+    UNIT["Degree",0.0174532925199433]
+  ],
   PROJECTION["Lambert_Conformal_Conic"],
   PARAMETER["False_Easting",250000.0],
-  PARAMETER["False_Northing",200000.0],
+  PARAMETER["False_Northing",150000.0],
   PARAMETER["Central_Meridian",15.0],
-  PARAMETER["Standard_Parallel_1",49.25],
+  PARAMETER["Standard_Parallel_1",49.0],
   PARAMETER["Standard_Parallel_2",50.5],
-  PARAMETER["Latitude_Of_Origin",50.0],
+  PARAMETER["Scale_Factor",1.0],
+  PARAMETER["Latitude_Of_Origin",49.75],
   UNIT["Meter",1.0]
 ]
 \end{verbatim}
 
+\subsection{Definice v Proj4}
+Definice ve formátu pro Proj4 má tvar:
+\begin{verbatim}
++proj=lcc +lat_1=49 +lat_2=50.5 +lat_0=49.75 +lon_0=15 +x_0=250000 +y_0=150000
++ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs
+\end{verbatim}
+
+\subsection{Zdůvodnění}
+Souřadnicový systém ETRS89 je použit z důvodu snadné návaznosti na mapování na evropské a světové úrovni -- jeho souřadnice jsou jednoduše převoditelné do elipsoidu WGS84. Díky navázání na evropskou tektonickou desku se také nebudou v čase měnit kontinentálním driftem. Podkladový elipsoid GRS80 je velmi přesný a v současnosti nejčastěji používaný. ETRS89 neobsahuje chyby akumulované při tvorbě systému S-JTSK.
+
+Kuželové zobrazení v normální poloze je vhodné pro území protažená v rovnoběžkovém směru, tedy i Česko. Obecnou polohu kužele, kterou používá zobrazení Křovákovo, je možno díky neuvažování Slovenska opustit.
+
+Úhlojevné zobrazení je zvoleno kvůli návaznosti na existující systém; zachovaná vysoká přesnost v kombinaci s touto vlastností umožňuje i geodetické aplikace, a tedy výhledově úplné opuštění S-JTSK. Zkreslení ploch je díky malé velikosti mapovaného území stále zcela v mezích současných standardů.
+
+Parametry zobrazení byly zvoleny na základě numerické optimalizace zkreslení a následně zaokrouhleny:
+\begin{itemize}
+\item Základní poledník 15$\dg$ je porovnatelný s UTM, běžně používaný a z celočíselných poledníků nejblíže středu území.
+\item Základní rovnoběžka a sečné rovnoběžky jsou zvoleny v souladu s pravidly pro minimalizaci zkreslení a jsou velmi blízké minimálním dosažitelným hodnotám.
+\item Posuny souřadnic (false northing a easting) jsou zvoleny jako vhodná kulatá čísla tak, aby hodnoty souřadnic byly na celém území Česka kladné a přitom nepříliš vysoké.
+\end{itemize}
+
 \subsection{Zobrazovací rovnice}
 \subsubsection{Konstanty zobrazení}
 \begin{align*}
-q = a \frac{M(\varphi_1)}{n t(\varphi_1)^n} &= 11\,611\,769,657\,\mathrm{m}\\
-n = \frac{\ln{M(\varphi_1)} - \ln{M(\varphi_2)}}{\ln{t(\varphi_1)} - \ln{t(\varphi_2)}} &= 0,764\,655\,442\,899\\
-\rho_0 = \rho(\varphi_0) &= 5\,361\,378,147\,\mathrm{m},
+q = a \frac{M(\varphi_1)}{n t(\varphi_1)^n} &= 11\,616\,402,384\,542\,\mathrm{m}\\
+n = \frac{\ln{M(\varphi_1)} - \ln{M(\varphi_2)}}{\ln{t(\varphi_1)} - \ln{t(\varphi_2)}} &= 0,763\,254\,270\,539\\
+\rho_0 = \rho(\varphi_0) &= 5\,398\,945,208\,625\,\mathrm{m},
 \end{align*}
 kde $M$ je podélný poloměr křivosti elipsoidu
 \begin{equation*}
 M(\varphi) = \frac{\cos{\varphi}}{\sqrt{1 - e^2 \sin^2{\varphi}}},
 \end{equation*}
-$a$ a $e$ parametry elipsoidu WGS-84
+$a$ a $e$ parametry elipsoidu GRS80
 \begin{align*}
 a &= 6\,378\,137\,\mathrm{m}\\
 e &= 0,006\,694\,380
@@ -114,15 +138,22 @@ Iterační výpočet má tvar
 pro konvergenci stačí zpravidla tři až čtyři iterace.
 
 \section{Zdůvodnění a diskuze}
-Takto navržené zobrazení má oproti Křovákově zobrazení následující výhody:
+Takto navržené zobrazení má oproti Křovákovu zobrazení následující výhody:
 \begin{itemize}
-  \item Používá standardní elipsoid, v jehož souřadnicích je uváděna většina současných prostorových dat. Existuje pro něj globální transformace.
+  \item Používá standardní elipsoid, v jehož souřadnicích je uváděna většina současných prostorových dat. Existuje pro něj globální transformační klíč bez nutnosti používat mezielipsoidické transformace a grid shift.
   \item Používá konvenční orientaci os, která nečiní problémy GIS softwaru. Hodnoty obou souřadnic jsou na celém území státu kladné.
   \item Je výpočetně méně náročné než Křovákovo zobrazení, neboť díky své přímé povaze a normální poloze používá pouze jeden krok.
+  \item Všechny prvky zobrazení jsou již implementovány ve všech běžných GIS softwarech. 
   \item Hodnoty zkreslení jsou pro většinu území stejné jako u Křovákova zobrazení.
   \item Meridiánová konvergence je nižší a rovnoměrně rozložená kolem nuly, takže není třeba mapu celé republiky natáčet pro nezkreslené vnímání severního směru.
 \end{itemize}
 Obraz Česka se zeměpisnou sítí v tomto zobrazení je uveden na obrázku níže.
 
-\makebox[\textwidth]{\includegraphics[width=1.25\textwidth]{map.pdf}}
+% \begin{landscape}
+\includepdf[landscape=true]{map.pdf}
+% \begin{figure}
+% \centering
+% \makebox[\textwidth]{\includegraphics[width=1.5\textwidth]{map.pdf}}
+% \end{figure}
+% \end{landscape}
 \end{document}
