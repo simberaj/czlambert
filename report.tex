@@ -19,6 +19,8 @@
 \newcommand{\term}[1]{\emph{#1}}
 \newcommand{\dg}{^{\circ}}
 
+\hyphenation{kom-pro-mis}
+
 \begin{document}
 \maketitle
 \begin{abstract}
@@ -26,12 +28,13 @@ V současnosti nejvíce rozšířené kartografické zobrazení pro Česko je K�
 \end{abstract}
 
 \section{Popis zobrazení}
-Zobrazení je variantou Lambertova sečného úhlojevného \emph{(konformního)} kuželového zobrazení z elipsoidu do roviny. Počítá s využitím evropského referenčního elipsoidu ETRS89. 
+Zobrazení je variantou Lambertova sečného úhlojevného \emph{(konformního)} kuželového zobrazení z elipsoidu do roviny v normální poloze. Počítá s využitím evropského referenčního elipsoidu ETRS89. 
 
 \subsection{Parametry zobrazení}
 Parametry jsou následující:
 \begin{itemize}
   \item orientace os: standardní matematická
+  \item poloha kužele: normální (kartografický pól totožný se severním zeměpisným)
   \item základní poledník $\lambda_0 = 15\dg$
   \item základní rovnoběžka $\varphi_0 = 49\dg 45'$
   \item sečné rovnoběžky:
@@ -74,9 +77,9 @@ Definice ve formátu pro Proj4 má tvar:
 \subsection{Zdůvodnění}
 Souřadnicový systém ETRS89 je použit z důvodu snadné návaznosti na mapování na evropské a světové úrovni -- jeho souřadnice jsou jednoduše převoditelné do elipsoidu WGS84. Díky navázání na evropskou tektonickou desku se také nebudou v čase měnit kontinentálním driftem. Podkladový elipsoid GRS80 je velmi přesný a v současnosti nejčastěji používaný. ETRS89 neobsahuje chyby akumulované při tvorbě systému S-JTSK.
 
-Kuželové zobrazení v normální poloze je vhodné pro území protažená v rovnoběžkovém směru, tedy i Česko. Obecnou polohu kužele, kterou používá zobrazení Křovákovo, je možno díky neuvažování Slovenska opustit.
+Kuželové zobrazení v normální poloze je vhodné pro území protažená v rovnoběžkovém směru, tedy i Česko. Obecnou polohu kužele, kterou používá zobrazení Křovákovo, je možno díky neuvažování Slovenska bez většího nárůstu zkreslení opustit.
 
-Úhlojevné zobrazení je zvoleno kvůli návaznosti na existující systém; zachovaná vysoká přesnost v kombinaci s touto vlastností umožňuje i geodetické aplikace, a tedy výhledově úplné opuštění S-JTSK. Zkreslení ploch je díky malé velikosti mapovaného území stále zcela v mezích současných standardů.
+Úhlojevné zobrazení je zvoleno kvůli návaznosti na existující systém; zachovaná vysoká přesnost v kombinaci s touto vlastností umožňuje i geodetické aplikace, a tedy výhledově úplné opuštění S-JTSK. Zkreslení ploch je díky malé velikosti mapovaného území stále zcela v mezích současných standardů (viz příslušná sekce).
 
 Parametry zobrazení byly zvoleny na základě numerické optimalizace zkreslení a následně zaokrouhleny:
 \begin{itemize}
@@ -88,11 +91,11 @@ Parametry zobrazení byly zvoleny na základě numerické optimalizace zkreslen�
 \subsection{Zobrazovací rovnice}
 \subsubsection{Konstanty zobrazení}
 \begin{align*}
-q = a \frac{M(\varphi_1)}{n t(\varphi_1)^n} &= 11\,616\,402,384\,542\,\mathrm{m}\\
-n = \frac{\ln{M(\varphi_1)} - \ln{M(\varphi_2)}}{\ln{t(\varphi_1)} - \ln{t(\varphi_2)}} &= 0,763\,254\,270\,539\\
-\rho_0 = \rho(\varphi_0) &= 5\,398\,945,208\,625\,\mathrm{m},
+q = a \frac{w(\varphi_1)}{n t(\varphi_1)^n} &= 11\,583\,124,653\,549\,\mathrm{m}\\
+n = \frac{\ln{w(\varphi_1)} - \ln{w(\varphi_2)}}{\ln{t(\varphi_1)} - \ln{t(\varphi_2)}} &= 0,766\,083\,775\,796\\
+\rho_0 = \rho(\varphi_0) &= 5\,361\,345,963\,200\,\mathrm{m},
 \end{align*}
-kde $M$ je podélný poloměr křivosti elipsoidu
+kde $w$ je poměr
 \begin{equation*}
 M(\varphi) = \frac{\cos{\varphi}}{\sqrt{1 - e^2 \sin^2{\varphi}}},
 \end{equation*}
@@ -104,7 +107,7 @@ e &= 0,006\,694\,380
 a parametry $t$ a $\rho$
 \begin{align*}
 \rho(\varphi) &= q t(\varphi)^n\\
-t(\varphi) &= \sqrt{\frac{1-\sin{\varphi}}{1+\sin{\varphi}}\left(\frac{1+e\sin{\varphi}}{1-e\sin{\varphi}}\right)^e}
+t(\varphi) &= \tan{\left(\frac{\pi}{4} - \frac{\varphi}{2}\right)}\left(\frac{1+e\sin{\varphi}}{1-e\sin{\varphi}}\right)^{\frac{e}{2}}
 \end{align*}
 
 \subsubsection{Přímá transformace}
@@ -125,15 +128,15 @@ Zeměpisná délka se z pravoúhlých souřadnic získá přímým vztahem
 \end{equation*}
 Zeměpisnou šířku je třeba spočítat iterativně. Počáteční odhad je
 \begin{equation*}
-\varphi_{(1)} = \frac{\pi}{2} - 2 \arctan{t(x,y)},
+\varphi_{(1)} = \frac{\pi}{2} - 2 \arctan{\tau(x,y)},
 \end{equation*}
 kde
 \begin{equation*}
-t(x,y) = \left[\frac{1}{q}\sqrt{(x - \Delta x)^2 + [\rho_0 - (y - \Delta y)]^2}\right]^{\frac{1}{n}}.
+\tau(x,y) = \left[\frac{1}{q}\sqrt{(x - \Delta x)^2 + [\rho_0 - (y - \Delta y)]^2}\right]^{\frac{1}{n}}.
 \end{equation*}
 Iterační výpočet má tvar
 \begin{equation*}
-\varphi_{(n+1)} = \frac{\pi}{2} - 2 \arctan{\left[t(x,y) \cdot \left(\frac{1-e\sin{\varphi_{(n)}}}{1+e\sin{\varphi_{(n)}}}\right)^{\frac{e}{2}}\right]},
+\varphi_{(n+1)} = \frac{\pi}{2} - 2 \arctan{\left[\tau(x,y) \cdot \left(\frac{1-e\sin{\varphi_{(n)}}}{1+e\sin{\varphi_{(n)}}}\right)^{\frac{e}{2}}\right]},
 \end{equation*}
 pro konvergenci stačí zpravidla tři až čtyři iterace.
 
@@ -147,6 +150,17 @@ Takto navržené zobrazení má oproti Křovákovu zobrazení následující vý
   \item Hodnoty zkreslení jsou pro většinu území stejné jako u Křovákova zobrazení.
   \item Meridiánová konvergence je nižší a rovnoměrně rozložená kolem nuly, takže není třeba mapu celé republiky natáčet pro nezkreslené vnímání severního směru.
 \end{itemize}
+
+\subsection{Zkreslení}
+Zkreslení délek v zobrazení je možno snadno určit pomocí vzorce pro měřítko délek
+\begin{equation*}
+m = \frac{n\rho}{N \cos{\varphi}} = \frac{n\rho(\varphi) \sqrt{1 - e^2 \sin^2{\varphi}}}{a \cos{\varphi}}
+\end{equation*}
+Díky konformitě je zkreslení nezávislé na směru; ze vzorce výše vyplývá, že je konstantní pro danou zeměpisnou šířku. Měřítko ploch je $P = m^2$.
+
+Pro dané hodnoty nezkreslených rovnoběžek je zkreslení délek na celém území maximálně 17,5 cm/km a průměrně 5,7 cm/km. Optimální hodnoty průměrného zkreslení 3,56 cm/km lze dosáhnout při dvojici nezkreslených rovnoběžek 49,33$\dg$ a 50,16$\dg$ (maximální zkreslení 23,7 cm/km), optimální hodnoty maximálního zkreslení 11,94 cm/km při dvojici 48,92$\dg$ a 50,69$\dg$ (průměrné zkreslení 8,1 cm/km). Zvolenou dvojici lze tedy považovat za~kompromis mezi oběma cíli, navíc při zachování snadno zapamatovatelných hodnot.
+
+\subsection{Mapa}
 Obraz Česka se zeměpisnou sítí v tomto zobrazení je uveden na obrázku níže.
 
 % \begin{landscape}
